@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -10,16 +10,114 @@
 
     <title>Scraps</title>
 
+    <script type="text/javascript" src="/js/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/medium-editor.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Droid+Serif|Inconsolata|Open+Sans" rel="stylesheet"/>
     <link href="/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/css/index.css" rel="stylesheet"/>
+    <link href="/css/medium-editor.min.css" rel="stylesheet"/>
+    <link href="/css/themes/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/css/index.css?v=25" rel="stylesheet"/>
 </head>
 <body>
 
-<div class="container">
+<div class="index-container">
+    <div class="contexts-menu">
+        <div class="close-menu">
+            <a id="contextsMenuCloseBtn"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+        </div>
+    </div>
 
-    Scraps
+    <div class="scraps-menu">
+        <div class="close-menu">
+            <a id="scrapsMenuCloseBtn"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+        </div>
+    </div>
 
+    <div class="index-buttons">
+        <div class="btn-toolbar" role="toolbar">
+            <div class="btn-group">
+                <button id="contextsMenuBtn" type="button" class="btn btn-default" aria-label="Select Context"><span
+                        class="glyphicon glyphicon-th-large" aria-hidden="true"></span></button>
+                <button id="scrapsMenuBtn" type="button" class="btn btn-default" aria-label="Select Scrap"><span
+                        class="glyphicon glyphicon-th" aria-hidden="true"></span></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-wrap">
+        <div class="content">
+            <div class="editable">
+            </div>
+        </div>
+    </div>
 </div>
+<script th:inline="javascript">
+/*<![CDATA[*/
 
+$(function () {
+    'use strict';
+
+    var debug = function(value) {
+        console.log(value);
+    };
+
+    var contexts = /*[[${contexts}]]*/ {};
+    var activeContext = /*[[${activeContext}]]*/ {};
+    var scraps = /*[[${scraps}]]*/ {};
+    var activeScrap = /*[[${activeScrap}]]*/ {};
+
+    var toggleMenuClass = function(menuClass) {
+        if ($('.'+menuClass).hasClass('show-menu')) {
+            $('.'+menuClass).removeClass('show-menu');
+        } else {
+            $('.'+menuClass).addClass('show-menu');
+        }
+    };
+    var hideMenuClass = function(menuClass) {
+        $('.'+menuClass).removeClass('show-menu');
+    };
+
+    var initIndexButtons = function() {
+        $('#contextsMenuBtn').click(function() {
+            toggleMenuClass('contexts-menu');
+        });
+        $('#contextsMenuCloseBtn').click(function() {
+            hideMenuClass('contexts-menu');
+        });
+        $('#scrapsMenuBtn').click(function() {
+            toggleMenuClass('scraps-menu');
+        });
+        $('#scrapsMenuCloseBtn').click(function() {
+            hideMenuClass('scraps-menu');
+        });
+        $('.content-wrap').click(function() {
+            hideMenuClass('contexts-menu');
+            hideMenuClass('scraps-menu');
+            $('.editable').focus();
+        });
+    };
+
+    initIndexButtons();
+
+    var editor = new MediumEditor('.editable');
+    editor.setContent(activeScrap.content);
+    $('.editable').focus();
+
+    var timer = null;
+    editor.subscribe('editableInput', function() {
+        if (timer != null) window.clearTimeout(timer);
+        timer = window.setTimeout(saveContent, 2000);
+    });
+
+    var saveContent = function() {
+        $.ajax({ url:'/saveScrap', type:"POST", data: {"id": activeScrap.id, "content": editor.getContent()}, success: function(data){ activeScrap = data; }});
+        if (timer != null) window.clearTimeout(timer);
+        debug('saved');
+    };
+});
+/*]]>*/
+</script>
 </body>
 </html>

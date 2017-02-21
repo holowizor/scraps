@@ -1,5 +1,93 @@
+html,
+body,
+.index-container,
+.content-wrap {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
 body {
-  padding-top: 40px;
-  padding-bottom: 40px;
   background-color: #eee;
+}
+
+.content-wrap {
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
+.index-buttons {
+  position: fixed;
+  z-index: 1000;
+  margin: 1em;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.close-menu {
+  position: absolute;
+  right: 1em;
+  top: 1em;
+  overflow: hidden;
+  font-size: 0.75em;
+  border: none;
+  background: transparent;
+}
+
+.contexts-menu {
+  position: absolute;
+  z-index: 1001;
+  width: 100%;
+  height: 300px;
+  background: #373a47;
+  padding: 2.5em 1.5em 0;
+  font-size: 1.15em;
+
+  -webkit-transform: translate3d(0,-320px,0);
+  transform: translate3d(0,-320px,0);
+
+  -webkit-transition: -webkit-transform 0.4s;
+  transition: transform 0.4s;
+
+  -webkit-transition-timing-function: cubic-bezier(0.7,0,0.3,1);
+  transition-timing-function: cubic-bezier(0.7,0,0.3,1);
+}
+
+.scraps-menu {
+  position: absolute;
+  z-index: 1001;
+  width: 300px;
+  height: 100%;
+  background: #373a47;
+  padding: 2.5em 1.5em 0;
+  font-size: 1.15em;
+
+  -webkit-transform: translate3d(-320px,0,0);
+  transform: translate3d(-320px,0,0);
+
+  -webkit-transition: -webkit-transform 0.4s;
+  transition: transform 0.4s;
+
+  -webkit-transition-timing-function: cubic-bezier(0.7,0,0.3,1);
+  transition-timing-function: cubic-bezier(0.7,0,0.3,1);
+}
+
+.contexts-menu.show-menu, .scraps-menu.show-menu {
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+
+  -webkit-transition: -webkit-transform 0.8s;
+  transition: transform 0.8s;
+
+  -webkit-transition-timing-function: cubic-bezier(0.7,0,0.3,1);
+  transition-timing-function: cubic-bezier(0.7,0,0.3,1);
+}
+
+.editable {
+  min-height: 50px;
+  margin: 80px;
+}
+
+.editable:focus {
+  outline: none;
 }
