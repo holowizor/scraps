@@ -18,7 +18,7 @@
     <link href="/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="/css/medium-editor.min.css" rel="stylesheet"/>
     <link href="/css/themes/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/css/index.css?v=25" rel="stylesheet"/>
+    <link href="/css/index.css?v=28" rel="stylesheet"/>
 </head>
 <body>
 
@@ -27,12 +27,14 @@
         <div class="close-menu">
             <a id="contextsMenuCloseBtn"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
         </div>
+        <div id="contextButtonsWrapper"></div>
     </div>
 
     <div class="scraps-menu">
         <div class="close-menu">
             <a id="scrapsMenuCloseBtn"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
         </div>
+        <div id="scrapButtonsWrapper"></div>
     </div>
 
     <div class="index-buttons">
@@ -53,6 +55,60 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="contextModal" tabindex="-1" role="dialog" aria-labelledby="contextModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form class="form-horizontal">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="contextModalLabel">New context</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="contextName"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="contextSaveBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="scrapModal" tabindex="-1" role="dialog" aria-labelledby="scrapModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form class="form-horizontal">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="scrapModalLabel">New scrap</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="scrapName"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="scrapSaveBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script th:inline="javascript">
 /*<![CDATA[*/
 
@@ -116,6 +172,95 @@ $(function () {
         if (timer != null) window.clearTimeout(timer);
         debug('saved');
     };
+
+    var createContext = function() {
+        $('#contextName').val('');
+        $('#contextModal').modal('show');
+    };
+    $('#contextSaveBtn').click(function() {
+        $('#contextModal').modal('hide');
+        $.ajax({ url:'/createContext', type:"POST", data: {"name": $('#contextName').val()}, success: function(data){
+            $('#contextBtn'+activeContext.id).removeClass('active');
+            activeContext = data;
+            addContextButton(activeContext);
+            loadScraps();
+        }});
+    });
+
+    var loadScraps = function() {
+        $.ajax({ url:'/loadScraps', type:"GET", data: {"context": activeContext.id}, success: function(data){
+            scraps = data;
+            initScrapButtons();
+            editor.setContent(activeScrap.content);
+            $('.editable').focus();
+        }});
+    };
+
+    var createScrap = function() {
+        $('#scrapName').val('');
+        $('#scrapModal').modal('show');
+    };
+    $('#scrapSaveBtn').click(function() {
+        $('#scrapModal').modal('hide');
+        $.ajax({ url:'/createScrap', type:"POST", data: {"context": activeContext.id, "name": $('#scrapName').val()}, success: function(data){
+            $('#scrapBtn'+activeScrap.id).removeClass('active');
+            activeScrap = data;
+            addScrapButton(activeScrap);
+            editor.setContent(activeScrap.content);
+            $('.editable').focus();
+        }});
+    });
+
+    var addContextButton = function(context) {
+        $('#contextButtonsWrapper').append('<button id="contextBtn'+context.id+'" type="button" class="btn btn-primary '+(context.active?'active':'')+'">'+context.name+'</button>');
+        $('#contextBtn'+context.id).click(function() {
+            var id = $(this).attr('id').replace("contextBtn", "");;
+            $.ajax({ url:'/setActiveContext', type:"POST", data: {"context": id}, success: function(data){
+                $('#contextBtn'+activeContext.id).removeClass('active');
+                activeContext = data;
+                $('#contextBtn'+activeContext.id).addClass('active');
+                loadScraps();
+            }});
+        });
+    };
+    var initContextButtons = function() {
+        $('#contextButtonsWrapper').html('');
+        $('#contextButtonsWrapper').append('<button id="contextBtnNew" type="button" class="btn btn-primary">Add</button>');
+        $('#contextBtnNew').click(function() {
+            createContext();
+        });
+        for (var i=0; i<contexts.length; i++) {
+            addContextButton(contexts[i]);
+        }
+    };
+
+    var addScrapButton = function(scrap) {
+        $('#scrapButtonsWrapper').append('<button id="scrapBtn'+scrap.id+'" type="button" class="btn btn-primary '+(scrap.active?'active':'')+'">'+scrap.name+'</button><br/>');
+        $('#scrapBtn'+scrap.id).click(function() {
+            var id = $(this).attr('id').replace("scrapBtn", "");;
+            $.ajax({ url:'/setActiveScrap', type:"POST", data: {"scrap": id}, success: function(data){
+                $('#scrapBtn'+activeScrap.id).removeClass('active');
+                activeScrap = data;
+                $('#scrapBtn'+activeScrap.id).addClass('active');
+                editor.setContent(activeScrap.content);
+                $('.editable').focus();
+            }});
+        });
+    };
+    var initScrapButtons = function() {
+        $('#scrapButtonsWrapper').html('');
+        $('#scrapButtonsWrapper').append('<button id="scrapBtnNew" type="button" class="btn btn-primary">Add</button><br/>');
+        $('#scrapBtnNew').click(function() {
+            createScrap();
+        });
+        for (var i=0; i<scraps.length; i++) {
+            addScrapButton(scraps[i]);
+            if (scraps[i].active) activeScrap = scraps[i];
+        }
+    };
+
+    initContextButtons();
+    initScrapButtons();
 });
 /*]]>*/
 </script>
