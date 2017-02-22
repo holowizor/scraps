@@ -1,7 +1,10 @@
 package com.marekkwiecien.service;
 
 import com.marekkwiecien.model.Context;
+import com.marekkwiecien.model.WebUser;
 import com.marekkwiecien.repo.ContextRepository;
+import com.marekkwiecien.repo.ScrapRepository;
+import com.marekkwiecien.web.ControllerHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -22,6 +25,9 @@ public class ContextService {
     private ContextRepository contextRepository;
 
     @Autowired
+    private ScrapRepository scrapRepository;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     public List<Context> getUserContexts(final String userId) {
@@ -30,20 +36,20 @@ public class ContextService {
         if (list == null || list.size() == 0) {
             list = new ArrayList<>();
 
-            list.add(createNewContext(userId, "prime", "#ffffff"));
+            list.add(createNew(userId, "prime", "#ffffff"));
         }
 
         return list;
     }
 
-    public Context getActiveContext(final List<Context> contexts) {
+    public Context getActive(final List<Context> contexts) {
         for (final Context c : contexts) {
             if (c.isActive()) return c;
         }
         return setActive(contexts.get(0));
     }
 
-    public Context createNewContext(final String userId, final String name, final String color) {
+    public Context createNew(final String userId, final String name, final String color) {
         final Context context = new Context();
         context.setOwner(userId);
         context.setName(name);
@@ -51,6 +57,16 @@ public class ContextService {
         contextRepository.save(context);
 
         return setActive(context);
+    }
+
+    public Context update(final String contextId, final String name) {
+        final Context context = contextRepository.findOne(contextId);
+        if (context != null) {
+            context.setName(name);
+            contextRepository.save(context);
+        }
+
+        return context;
     }
 
     public Context setActive(final Context context) {
@@ -61,6 +77,19 @@ public class ContextService {
                 new Update().set("active", true), Context.class);
 
         context.setActive(true);
+        return context;
+    }
+
+    public Context delete(final String contextId) {
+        final Context context = contextRepository.findOne(contextId);
+        if (context != null) {
+            scrapRepository.deleteByContext(contextId);
+            contextRepository.delete(context);
+            final WebUser user = ControllerHelper.getLoggedInUser();
+            // make sure there is a context
+            getActive(getUserContexts(user.getId()));
+        }
+
         return context;
     }
 }

@@ -18,7 +18,7 @@
     <link href="/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="/css/medium-editor.min.css" rel="stylesheet"/>
     <link href="/css/themes/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/css/index.css?v=28" rel="stylesheet"/>
+    <link href="/css/index.css?v=29" rel="stylesheet"/>
 </head>
 <body>
 
@@ -27,7 +27,7 @@
         <div class="close-menu">
             <a id="contextsMenuCloseBtn"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
         </div>
-        <div id="contextButtonsWrapper"></div>
+        <div id="contextButtonsWrapper" class="btn-toolbar"></div>
     </div>
 
     <div class="scraps-menu">
@@ -124,6 +124,9 @@ $(function () {
     var scraps = /*[[${scraps}]]*/ {};
     var activeScrap = /*[[${activeScrap}]]*/ {};
 
+    var scrapEdit = null;
+    var contextEdit = null;
+
     var toggleMenuClass = function(menuClass) {
         if ($('.'+menuClass).hasClass('show-menu')) {
             $('.'+menuClass).removeClass('show-menu');
@@ -168,24 +171,40 @@ $(function () {
     });
 
     var saveContent = function() {
-        $.ajax({ url:'/saveScrap', type:"POST", data: {"id": activeScrap.id, "content": editor.getContent()}, success: function(data){ activeScrap = data; }});
+        $.ajax({ url:'/saveScrap', type:"POST", data: {"scrap": activeScrap.id, "content": editor.getContent()}, success: function(data){ activeScrap = data; }});
         if (timer != null) window.clearTimeout(timer);
         debug('saved');
     };
 
     var createContext = function() {
         $('#contextName').val('');
+        $('#contextModalLabel').html('New Context');
         $('#contextModal').modal('show');
     };
     $('#contextSaveBtn').click(function() {
         $('#contextModal').modal('hide');
-        $.ajax({ url:'/createContext', type:"POST", data: {"name": $('#contextName').val()}, success: function(data){
-            $('#contextBtn'+activeContext.id).removeClass('active');
-            activeContext = data;
-            addContextButton(activeContext);
+        if (contextEdit != null) {
+            $.ajax({ url:'/updateContext', type:"POST", data: {"context": contextEdit, "name": $('#contextName').val()}, success: function(data){
+                $('#contextBtn'+data.id).html(data.name);
+            }});
+            contextEdit = null;
+        } else {
+            $.ajax({ url:'/createContext', type:"POST", data: {"name": $('#contextName').val()}, success: function(data){
+                $('#contextBtn'+activeContext.id).removeClass('active');
+                activeContext = data;
+                addContextButton(activeContext);
+                loadScraps();
+            }});
+        }
+    });
+
+    var loadContexts = function() {
+        $.ajax({ url:'/loadContexts', type:"GET", success: function(data){
+            contexts = data;
+            initContextButtons();
             loadScraps();
         }});
-    });
+    };
 
     var loadScraps = function() {
         $.ajax({ url:'/loadScraps', type:"GET", data: {"context": activeContext.id}, success: function(data){
@@ -198,21 +217,41 @@ $(function () {
 
     var createScrap = function() {
         $('#scrapName').val('');
+        $('#scrapModalLabel').html('New Scrap');
         $('#scrapModal').modal('show');
     };
     $('#scrapSaveBtn').click(function() {
         $('#scrapModal').modal('hide');
-        $.ajax({ url:'/createScrap', type:"POST", data: {"context": activeContext.id, "name": $('#scrapName').val()}, success: function(data){
-            $('#scrapBtn'+activeScrap.id).removeClass('active');
-            activeScrap = data;
-            addScrapButton(activeScrap);
-            editor.setContent(activeScrap.content);
-            $('.editable').focus();
-        }});
+        if (scrapEdit != null) {
+            $.ajax({ url:'/updateScrap', type:"POST", data: {"scrap": scrapEdit, "name": $('#scrapName').val()}, success: function(data){
+                $('#scrapBtn'+data.id).html(data.name);
+            }});
+            scrapEdit = null;
+        } else {
+            $.ajax({ url:'/createScrap', type:"POST", data: {"context": activeContext.id, "name": $('#scrapName').val()}, success: function(data){
+                $('#scrapBtn'+activeScrap.id).removeClass('active');
+                activeScrap = data;
+                addScrapButton(activeScrap);
+                editor.setContent(activeScrap.content);
+                $('.editable').focus();
+            }});
+        }
     });
 
     var addContextButton = function(context) {
-        $('#contextButtonsWrapper').append('<button id="contextBtn'+context.id+'" type="button" class="btn btn-primary '+(context.active?'active':'')+'">'+context.name+'</button>');
+        var btnHtml = '<div class="btn-group">'+
+            '  <button type="button" class="btn btn-default '+(context.active?'active':'')+'" id="contextBtn'+context.id+'">'+context.name+'</button>'+
+            '  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'+
+            '    <span class="caret"></span>'+
+            '    <span class="sr-only">Toggle Dropdown</span>'+
+            '  </button>'+
+            '  <ul class="dropdown-menu">'+
+            '    <li><a id="contextBtnEdit'+context.id+'">Edit</a></li>'+
+            '    <li><a id="contextBtnDelete'+context.id+'">Delete</a></li>'+
+            '  </ul>'+
+            '</div>';
+
+        $('#contextButtonsWrapper').append(btnHtml);
         $('#contextBtn'+context.id).click(function() {
             var id = $(this).attr('id').replace("contextBtn", "");;
             $.ajax({ url:'/setActiveContext', type:"POST", data: {"context": id}, success: function(data){
@@ -221,6 +260,24 @@ $(function () {
                 $('#contextBtn'+activeContext.id).addClass('active');
                 loadScraps();
             }});
+        });
+        $('#contextBtnEdit'+context.id).click(function() {
+            var id = $(this).attr('id').replace("contextBtnEdit", "");
+            var name = $('#contextBtn'+id).html();
+
+            contextEdit = id;
+            $('#contextName').val(name);
+            $('#contextModalLabel').html('Edit Context');
+            $('#contextModal').modal('show');
+        });
+        $('#contextBtnDelete'+context.id).click(function() {
+            var id = $(this).attr('id').replace("contextBtnDelete", "");
+            if (confirm('Sure to delete this?')) {
+                $.ajax({ url:'/deleteContext', type:"POST", data: {"context": id}, success: function(data){
+                    $('#contextBtnWrap'+data.id).remove();
+                    loadContexts();
+                }});
+            }
         });
     };
     var initContextButtons = function() {
@@ -231,13 +288,26 @@ $(function () {
         });
         for (var i=0; i<contexts.length; i++) {
             addContextButton(contexts[i]);
+            if (contexts[i].active) activeContext = contexts[i];
         }
     };
 
     var addScrapButton = function(scrap) {
-        $('#scrapButtonsWrapper').append('<button id="scrapBtn'+scrap.id+'" type="button" class="btn btn-primary '+(scrap.active?'active':'')+'">'+scrap.name+'</button><br/>');
+        var btnHtml = '<div id="scrapBtnWrap'+scrap.id+'" class="btn-toolbar scrap-nav-toolbar"><div class="btn-group">'+
+            '  <button type="button" class="btn btn-default '+(scrap.active?'active':'')+'" id="scrapBtn'+scrap.id+'">'+scrap.name+'</button>'+
+            '  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'+
+            '    <span class="caret"></span>'+
+            '    <span class="sr-only">Toggle Dropdown</span>'+
+            '  </button>'+
+            '  <ul class="dropdown-menu">'+
+            '    <li><a id="scrapBtnEdit'+scrap.id+'">Edit</a></li>'+
+            '    <li><a id="scrapBtnDelete'+scrap.id+'">Delete</a></li>'+
+            '  </ul>'+
+            '</div></div>';
+
+        $('#scrapButtonsWrapper').append(btnHtml);
         $('#scrapBtn'+scrap.id).click(function() {
-            var id = $(this).attr('id').replace("scrapBtn", "");;
+            var id = $(this).attr('id').replace("scrapBtn", "");
             $.ajax({ url:'/setActiveScrap', type:"POST", data: {"scrap": id}, success: function(data){
                 $('#scrapBtn'+activeScrap.id).removeClass('active');
                 activeScrap = data;
@@ -246,10 +316,28 @@ $(function () {
                 $('.editable').focus();
             }});
         });
+        $('#scrapBtnEdit'+scrap.id).click(function() {
+            var id = $(this).attr('id').replace("scrapBtnEdit", "");
+            var name = $('#scrapBtn'+id).html();
+
+            scrapEdit = id;
+            $('#scrapName').val(name);
+            $('#scrapModalLabel').html('Edit Scrap');
+            $('#scrapModal').modal('show');
+        });
+        $('#scrapBtnDelete'+scrap.id).click(function() {
+            var id = $(this).attr('id').replace("scrapBtnDelete", "");
+            if (confirm('Sure to delete this?')) {
+                $.ajax({ url:'/deleteScrap', type:"POST", data: {"scrap": id}, success: function(data){
+                    $('#scrapBtnWrap'+data.id).remove();
+                    loadScraps();
+                }});
+            }
+        });
     };
     var initScrapButtons = function() {
         $('#scrapButtonsWrapper').html('');
-        $('#scrapButtonsWrapper').append('<button id="scrapBtnNew" type="button" class="btn btn-primary">Add</button><br/>');
+        $('#scrapButtonsWrapper').append('<div class="btn-toolbar scrap-nav-toolbar"><div class="btn-group"><button id="scrapBtnNew" type="button" class="btn btn-primary">Add</button></div></div></div>');
         $('#scrapBtnNew').click(function() {
             createScrap();
         });

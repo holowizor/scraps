@@ -92,10 +92,6 @@ body {
   outline: none;
 }
 
-.contextButtonsWrapper {
-    margin: 30px;
-}
-
-.scrapButtonsWrapper {
-    margin: 30px;
+.scrap-nav-toolbar {
+  padding-bottom: 3px;
 }

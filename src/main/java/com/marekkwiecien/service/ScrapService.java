@@ -30,26 +30,36 @@ public class ScrapService {
         if (list == null || list.size() == 0) {
             list = new ArrayList<>();
 
-            list.add(createNewScrap(contextId, "one"));
+            list.add(createNew(contextId, "one"));
         }
 
         return list;
     }
 
-    public Scrap getActiveScrap(final List<Scrap> scraps) {
+    public Scrap getActive(final List<Scrap> scraps) {
         for (final Scrap s : scraps) {
             if (s.isActive()) return s;
         }
         return setActive(scraps.get(0));
     }
 
-    public Scrap createNewScrap(final String contextId, final String name) {
+    public Scrap createNew(final String contextId, final String name) {
         final Scrap scrap = new Scrap();
         scrap.setContext(contextId);
         scrap.setName(name);
         scrapRepository.save(scrap);
 
         return setActive(scrap);
+    }
+
+    public Scrap update(final String scrapId, final String name) {
+        final Scrap scrap = scrapRepository.findOne(scrapId);
+        if (scrap != null) {
+            scrap.setName(name);
+            scrapRepository.save(scrap);
+        }
+
+        return scrap;
     }
 
     public Scrap setActive(final Scrap scrap) {
@@ -60,6 +70,17 @@ public class ScrapService {
                 new Update().set("active", true), Scrap.class);
 
         scrap.setActive(true);
+        return scrap;
+    }
+
+    public Scrap delete(final String scrapId) {
+        final Scrap scrap = scrapRepository.findOne(scrapId);
+        if (scrap != null) {
+            scrapRepository.delete(scrap);
+            // make sure there are scrpas after removal, and also an active one
+            getActive(getScraps(scrap.getContext()));
+        }
+
         return scrap;
     }
 }

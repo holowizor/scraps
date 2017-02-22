@@ -12,4 +12,5 @@ public interface ScrapRepository extends MongoRepository<Scrap, String> {
 
     List<Scrap> findByContext(final String contextId);
 
+    void deleteByContext(final String contextId);
 }

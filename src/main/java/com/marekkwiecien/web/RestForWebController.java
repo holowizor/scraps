@@ -44,13 +44,13 @@ public class RestForWebController {
     public Scrap createScrap(@RequestParam("context") final String context,
                              @RequestParam("name") final String name) {
 
-        final Scrap scrap = scrapService.createNewScrap(context, name);
+        final Scrap scrap = scrapService.createNew(context, name);
         return scrap;
     }
 
     @RequestMapping("/saveScrap")
     @ResponseBody
-    public Scrap saveScrap(@RequestParam("id") final String scrapId,
+    public Scrap saveScrap(@RequestParam("scrap") final String scrapId,
                            @RequestParam("content") final String content) {
 
         final Scrap scrap = scrapRepository.findOne(scrapId);
@@ -72,11 +72,32 @@ public class RestForWebController {
         return scrap;
     }
 
+    @RequestMapping("/deleteScrap")
+    @ResponseBody
+    public Scrap deleteScrap(@RequestParam("scrap") final String scrapId) {
+        final Scrap scrap = scrapService.delete(scrapId);
+        return scrap;
+    }
+
+    @RequestMapping("/updateScrap")
+    @ResponseBody
+    public Scrap updateScrap(@RequestParam("scrap") final String scrapId, @RequestParam("name") final String name) {
+        final Scrap scrap = scrapService.update(scrapId, name);
+        return scrap;
+    }
+
+    @RequestMapping("/loadContexts")
+    @ResponseBody
+    public List<Context> loadContexts() {
+        final WebUser user = ControllerHelper.getLoggedInUser();
+        return contextService.getUserContexts(user.getId());
+    }
+
     @RequestMapping("/createContext")
     @ResponseBody
     public Context createContext(@RequestParam("name") final String name) {
         final WebUser user = ControllerHelper.getLoggedInUser();
-        final Context context = contextService.createNewContext(user.getId(), name, "#ffffff");
+        final Context context = contextService.createNew(user.getId(), name, "#ffffff");
         return context;
     }
 
@@ -87,6 +108,27 @@ public class RestForWebController {
         if (context != null) {
             return contextService.setActive(context);
         }
+        return context;
+    }
+
+    @RequestMapping("/deleteContext")
+    @ResponseBody
+    public Context deleteContext(@RequestParam("context") final String contextId) {
+        final Context context = contextService.delete(contextId);
+
+        // find active context
+        final WebUser user = ControllerHelper.getLoggedInUser();
+        final Context active = contextService.getActive(contextService.getUserContexts(user.getId()));
+        // and make sure there is at least one scrap and it is active
+        scrapService.getActive(scrapService.getScraps(active.getId()));
+
+        return context;
+    }
+
+    @RequestMapping("/updateContext")
+    @ResponseBody
+    public Context updateContext(@RequestParam("context") final String contextId, @RequestParam("name") final String name) {
+        final Context context = contextService.update(contextId, name);
         return context;
     }
 }

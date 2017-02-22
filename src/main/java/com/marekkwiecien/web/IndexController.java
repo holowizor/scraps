@@ -29,10 +29,10 @@ public class IndexController {
         final WebUser user = ControllerHelper.getLoggedInUser();
 
         final List<Context> contexts = contextService.getUserContexts(user.getId());
-        final Context context = contextService.getActiveContext(contexts);
+        final Context context = contextService.getActive(contexts);
 
         final List<Scrap> scraps = scrapService.getScraps(context.getId());
-        final Scrap scrap = scrapService.getActiveScrap(scraps);
+        final Scrap scrap = scrapService.getActive(scraps);
 
         model.addAttribute("contexts", contexts);
         model.addAttribute("activeContext", context);
