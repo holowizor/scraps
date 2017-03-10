@@ -11,14 +11,12 @@ body {
 
 .contexts-menu {
   width: 100%;
-  background: #7A942E;
-  padding: 1.5em;
+  padding: 0.2em;
 }
 
 .scraps-menu {
   width: 100%;
-  background: #8DB255;
-  padding: 1.5em;
+  padding: 0.2em;
 }
 
 .editable {
@@ -28,4 +26,9 @@ body {
 
 .editable:focus {
   outline: none;
+}
+
+.header {
+  padding-top: 15px;
+  border-bottom: 1px dotted #9a9a9a;
 }
