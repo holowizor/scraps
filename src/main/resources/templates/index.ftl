@@ -11,8 +11,8 @@
     <title>Hello, world!</title>
   </head>
   <body>
-    <h1>Hello, ${user.name}!</h1>
-    Your email address is ${user.email}
+    <h1>Hello, ${context.name}!</h1>
+    Your email address is ${context.id}
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

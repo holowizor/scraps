@@ -6,6 +6,10 @@ import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.Authentication
+import io.ktor.auth.UserIdPrincipal
+import io.ktor.auth.authenticate
+import io.ktor.auth.basic
 import io.ktor.content.resources
 import io.ktor.content.static
 import io.ktor.features.CallLogging
@@ -15,11 +19,13 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.freemarker.FreeMarker
 import io.ktor.freemarker.respondTemplate
 import io.ktor.jackson.jackson
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.routing
 
-data class User(val name: String, val email: String)
+val service = ScrapsService()
 
 fun Application.main() {
     install(DefaultHeaders)
@@ -34,14 +40,32 @@ fun Application.main() {
     install(FreeMarker) {
         templateLoader = ClassTemplateLoader(Application::class.java.classLoader, "templates")
     }
-    routing {
-        get("/user") {
-            val user = User("user name", "user@example.com")
-            call.respond(user)
+    install(Authentication) {
+        basic {
+            realm = "ktor"
+            validate { credentials ->
+                if (credentials.password == "test1234") {
+                    UserIdPrincipal(credentials.name)
+                } else {
+                    null
+                }
+            }
         }
-        get("/") {
-            val user = User("user name", "user@example.com")
-            call.respondTemplate("index.ftl", mapOf("user" to user), "e")
+    }
+    routing {
+        get("/context") {
+            call.respond(service.findAllContexts())
+        }
+        post("/context") {
+            val context = call.receive<Context>()
+            service.saveContext(context)
+            call.respond(context)
+        }
+        authenticate {
+            get("/") {
+                val ctx = Context("test")
+                call.respondTemplate("index.ftl", mapOf("context" to ctx), "e")
+            }
         }
         static("static") {
             resources("css")
