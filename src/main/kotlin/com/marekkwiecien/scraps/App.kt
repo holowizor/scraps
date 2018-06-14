@@ -67,6 +67,19 @@ fun Application.main() {
             val updatedContext = service.saveContext(context)
             call.respond(updatedContext)
         }
+        get("/context/{contextId}/scrap") {
+            call.respond(service.findScrapsForContext(call.parameters["contextId"]!!.toLong()))
+        }
+        post("/context/{contextId}/scrap") {
+            val scrap = call.receive<Scrap>()
+            val updatedScrap = service.saveScrap(scrap)
+            call.respond(updatedScrap)
+        }
+        put("/context/{contextId}/scrap") {
+            val scrap = call.receive<Scrap>()
+            val updatedScrap = service.saveScrap(scrap)
+            call.respond(updatedScrap)
+        }
         authenticate {
             get("/") {
                 val ctx = Context(1L, "test")
