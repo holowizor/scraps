@@ -36,7 +36,7 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "org.dizitart:nitrite:$nitrite_version"
+    compile "org.dizitart:potassium-nitrite:$nitrite_version"
     compile "io.ktor:ktor-server-netty:$ktor_version"
     compile "io.ktor:ktor-freemarker:$ktor_version"
     compile "io.ktor:ktor-jackson:$ktor_version"

@@ -23,6 +23,7 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.routing.put
 import io.ktor.routing.routing
 
 val service = ScrapsService()
@@ -58,12 +59,17 @@ fun Application.main() {
         }
         post("/context") {
             val context = call.receive<Context>()
-            service.saveContext(context)
-            call.respond(context)
+            val newContext = service.saveContext(context)
+            call.respond(newContext)
+        }
+        put("/context") {
+            val context = call.receive<Context>()
+            val updatedContext = service.saveContext(context)
+            call.respond(updatedContext)
         }
         authenticate {
             get("/") {
-                val ctx = Context("test")
+                val ctx = Context(1L, "test")
                 call.respondTemplate("index.ftl", mapOf("context" to ctx), "e")
             }
         }

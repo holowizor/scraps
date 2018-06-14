@@ -1,16 +1,41 @@
 package com.marekkwiecien.scraps
 
-import org.dizitart.no2.Nitrite
-import org.dizitart.no2.objects.ObjectRepository
+import org.dizitart.kno2.getRepository
+import org.dizitart.kno2.nitrite
+import org.dizitart.no2.NitriteId
+import java.io.File
 
 class ScrapsService {
-    private val db: Nitrite = initDb()
-    private val contextRepository: ObjectRepository<Context> = db.getRepository(Context::class.java)
-    private val scrapRepository: ObjectRepository<Scrap> = db.getRepository(Scrap::class.java)
+    private val db = nitrite("sa", "sa") {
+        file = File("scraps.nitrite")
+        autoCommitBufferSize = 2048
+        compress = true
+        autoCompact = false
+    }
 
-    private fun initDb() = Nitrite.builder().filePath("scraps.nitrite").openOrCreate("sa", "sa")
+    fun saveContext(context: Context): Context {
+        if (context.id == 0L) {
+            val newContext = Context(NitriteId.newId().idValue, context.name)
+            db.getRepository<Context> {
+                insert(newContext)
+            }
+            return newContext
+        }
+        else {
+            db.getRepository<Context> {
+                update(context)
+            }
+        }
 
-    fun saveContext(context: Context) = if (context.id == null) contextRepository.insert(context) else contextRepository.update(context)
-    fun deleteContext(context: Context) = contextRepository.remove(context)
-    fun findAllContexts() = contextRepository.find()
+        return context
+    }
+
+    fun deleteContext(context: Context) {
+        db.getRepository<Context> {
+            remove(context)
+        }
+    }
+
+    fun findAllContexts() = db.getRepository<Context>().find().toList()
+
 }
