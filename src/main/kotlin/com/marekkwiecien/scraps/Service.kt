@@ -36,7 +36,21 @@ class ScrapsService {
         }
     }
 
-    fun findAllContexts() = db.getRepository<Context>().find().toList()
+    fun findAllContexts(): List<Context> {
+        val allContexts = db.getRepository<Context>().find().toList()
+        return if (allContexts.size == 0) {
+            val newContext = createNewContext("new")
+            listOf(newContext)
+        } else {
+            allContexts
+        }
+    }
+
+    fun createNewContext(contextName: String): Context {
+        val newContext = saveContext(Context(0L, contextName))
+        saveScrap(Scrap(0L, newContext.id, "<p>write something here</p>"))
+        return newContext
+    }
 
     fun saveScrap(scrap: Scrap): Scrap {
         if (scrap.id == 0L) {

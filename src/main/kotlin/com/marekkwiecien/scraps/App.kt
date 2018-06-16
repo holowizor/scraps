@@ -59,13 +59,23 @@ fun Application.main() {
         }
         post("/context") {
             val context = call.receive<Context>()
-            val newContext = service.saveContext(context)
-            call.respond(newContext)
+            if (context.id == 0L) {
+                val newContext = service.createNewContext(context.name)
+                call.respond(newContext)
+            } else {
+                val updatedContext = service.saveContext(context)
+                call.respond(updatedContext)
+            }
         }
         put("/context") {
             val context = call.receive<Context>()
-            val updatedContext = service.saveContext(context)
-            call.respond(updatedContext)
+            if (context.id == 0L) {
+                val newContext = service.createNewContext(context.name)
+                call.respond(newContext)
+            } else {
+                val updatedContext = service.saveContext(context)
+                call.respond(updatedContext)
+            }
         }
         get("/context/{contextId}/scrap") {
             call.respond(service.findScrapsForContext(call.parameters["contextId"]!!.toLong()))
