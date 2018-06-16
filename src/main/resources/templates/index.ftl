@@ -24,11 +24,46 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
     <script src="//cdn.jsdelivr.net/npm/medium-editor@latest/dist/js/medium-editor.min.js"></script>
+
     <script>
         var editor = new MediumEditor('.editable');
-        editor.setContent('<p>hello</p>', 0);
-        var editorContents = editor.getContent(0);
-        alert(editorContents);
+        //editor.setContent('<p>hello</p>', 0);
+        //var editorContents = editor.getContent(0);
+        //alert(editorContents);
+
+        var activeContextId = 0;
+        var activeScrapId = 0;
+        var contexts = [];
+        var scraps = [];
+
+        // general flow: load contexts, activate first, get its scraps, activate first
+        function loadContexts() {
+
+        }
+
+        function renderContexts() {
+
+        }
+
+        function selectContext(contextId) {
+
+        }
+
+        function loadScraps(contextId) {
+
+        }
+
+        function selectScrap(scrapId) {
+
+        }
+
+        function newContext() {
+
+        }
+
+        function newScrap() {
+
+        }
     </script>
   </body>
 </html>
