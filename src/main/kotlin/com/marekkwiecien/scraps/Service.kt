@@ -61,5 +61,4 @@ class ScrapsService {
     }
 
     fun findScrapsForContext(contextId: Long) = db.getRepository<Scrap>().find(Scrap::contextId eq contextId).toList()
-
 }
