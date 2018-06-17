@@ -99,6 +99,7 @@ fun Application.main() {
         static("static") {
             resources("css")
             resources("js")
+            resources("img")
         }
     }
 }

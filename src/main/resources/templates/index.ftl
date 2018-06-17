@@ -9,16 +9,20 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/medium-editor@latest/dist/css/medium-editor.min.css" type="text/css" media="screen" charset="utf-8">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/medium-editor@latest/dist/css/themes/beagle.min.css" type="text/css" media="screen" charset="utf-8">
-    <title>Hello, world!</title>
+    <title>Scraps</title>
   </head>
   <body>
-    <div id="contexts"></div>
+    <div class="navbar navbar-expand-md navbar-dark bg-dark">
+      <span class="navbar-brand">Scraps</span>
+      <div id="contexts"></div>
+    </div>
+    <div class="clearfix"></div>
     <div id="scraps"></div>
-    <h1>Hello, ${context.name}!</h1>
-    Your email address is ${context.id}
     <hr/>
-    <div class="editable">Edit me!</div>
-    <hr/>
+    <div class="container-fluid">
+      <div class="editable" style="outline: none;">Edit me!</div>
+    </div>
+
 
 <div class="modal fade" id="newContextModal" tabindex="-1" role="dialog" aria-labelledby="newContextModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
