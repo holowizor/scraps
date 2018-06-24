@@ -21,10 +21,7 @@ import io.ktor.freemarker.respondTemplate
 import io.ktor.jackson.jackson
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.put
-import io.ktor.routing.routing
+import io.ktor.routing.*
 
 val service = ScrapsService()
 
@@ -77,6 +74,12 @@ fun Application.main() {
                 call.respond(updatedContext)
             }
         }
+        delete("/context/{contextId}") {
+            val contextId = call.parameters["contextId"]!!.toLong()
+            val context = service.findContext(contextId)
+            service.deleteContext(context!!)
+            call.respond(service.findAllContexts())
+        }
         get("/context/{contextId}/scrap") {
             call.respond(service.findScrapsForContext(call.parameters["contextId"]!!.toLong()))
         }
@@ -89,6 +92,12 @@ fun Application.main() {
             val scrap = call.receive<Scrap>()
             val updatedScrap = service.saveScrap(scrap)
             call.respond(updatedScrap)
+        }
+        delete("/context/{contextId}/scrap/{scrapId}") {
+            val scrapId = call.parameters["scrapId"]!!.toLong()
+            val scrap = service.findScrap(scrapId)
+            service.deleteScrap(scrap!!)
+            call.respond(service.findScrapsForContext(call.parameters["contextId"]!!.toLong()))
         }
         authenticate {
             get("/") {

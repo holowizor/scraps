@@ -31,6 +31,7 @@ class ScrapsService {
     }
 
     fun deleteContext(context: Context) {
+        findScrapsForContext(context.id).iterator().forEach { deleteScrap(it) }
         db.getRepository<Context> {
             remove(context)
         }
@@ -45,6 +46,8 @@ class ScrapsService {
             allContexts
         }
     }
+
+    fun findContext(contextId: Long) = db.getRepository<Context>().find(Context::id eq contextId).singleOrNull()
 
     fun createNewContext(contextName: String): Context {
         val newContext = saveContext(Context(0L, contextName))
@@ -74,5 +77,17 @@ class ScrapsService {
         }
     }
 
-    fun findScrapsForContext(contextId: Long) = db.getRepository<Scrap>().find(Scrap::contextId eq contextId).toList()
+    fun findScrapsForContext(contextId: Long): List<Scrap> {
+        val scraps = db.getRepository<Scrap>().find(Scrap::contextId eq contextId).toList()
+        if (scraps.size == 0) {
+            val newScrap = Scrap(NitriteId.newId().idValue, contextId, "ideas", "<p>write something here</p>")
+            db.getRepository<Scrap> {
+                insert(newScrap)
+            }
+            return listOf(newScrap)
+        }
+        return scraps
+    }
+
+    fun findScrap(scrapId: Long) = db.getRepository<Scrap>().find(Scrap::id eq scrapId).singleOrNull()
 }
