@@ -6,10 +6,7 @@ import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.auth.Authentication
-import io.ktor.auth.UserIdPrincipal
-import io.ktor.auth.authenticate
-import io.ktor.auth.basic
+import io.ktor.auth.*
 import io.ktor.content.resources
 import io.ktor.content.static
 import io.ktor.features.CallLogging
@@ -53,6 +50,7 @@ fun Application.main() {
     routing {
         get("/context") {
             call.respond(service.findAllContexts())
+            call.authentication.principal
         }
         post("/context") {
             val context = call.receive<Context>()

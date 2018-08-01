@@ -1,8 +1,8 @@
 buildscript {
-    ext.kotlin_version = '1.2.31'
-    ext.nitrite_version = '3.0.0'
-    ext.ktor_version = '0.9.2'
-    ext.jackson_version = '2.9.2'
+    ext.kotlin_version = '1.2.51'
+    ext.nitrite_version = '3.0.1'
+    ext.ktor_version = '0.9.3'
+    ext.jackson_version = '2.9.6'
 
     repositories {
         mavenCentral()
