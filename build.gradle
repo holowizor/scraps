@@ -45,3 +45,14 @@ dependencies {
     compile "ch.qos.logback:logback-classic:1.2.1"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes "Implementation-Title": "Scraps Application",
+                "Implementation-Version": version,
+                "Main-Class": "io.ktor.server.netty.DevelopmentEngine"
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
